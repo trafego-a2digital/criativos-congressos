@@ -1,100 +1,48 @@
-"""
-Calls the Gemini API to generate this week's headline + supporting copy for
-a client's creative, rotating through the angles defined in clients.json.
-
-Env var expected: GEMINI_API_KEY
-"""
-import os
-import json
-import random
-import time
-import requests
-
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.5-flash:generateContent"
-)
-
-PROMPT_TEMPLATE = """Voce e um copywriter de anuncios (Meta Ads) especializado em vender
-ingressos para congressos e eventos profissionais no Brasil.
-
-Evento: {display_name}
-Oferta atual: {discount_label}, {installments}
-Categorias de ingresso: {ticket_tiers}
-Data: {date_label}
-Local: {location_label}
-Palestrantes confirmados (use nomes reais quando o angulo pedir): {speakers}
-
-Angulo desta semana: {angle}
-
-Gere um JSON com exatamente estas chaves, em portugues do Brasil, sem
-acentuacao problematica, linguagem direta e sem cliche de IA (nada de
-"desbloqueie", "imperdivel", "transformador"). Se o angulo mencionar citar
-palestrantes, escolha 2 a 3 nomes da lista fornecida e cite pelo nome real
-(nao invente nomes que nao estao na lista):
-
-{{
-  "headline_lines": ["linha 1", "linha 2", "linha 3 (max 3 linhas curtas)"],
-  "highlight_word": "uma palavra da ultima linha do headline para destacar em cor de acento",
-  "subtext": "uma frase curta de apoio, max 90 caracteres"
-}}
-
-Responda apenas com o JSON, sem markdown, sem comentario."""
-
-
-def generate_weekly_copy(client_config, angle=None):
-    offer = client_config["offer"]
-    angle = angle or random.choice(client_config["copy_angles"])
-    speakers = client_config.get("speakers", [])
-    speakers_sample = random.sample(speakers, min(6, len(speakers))) if speakers else []
-
-    prompt = PROMPT_TEMPLATE.format(
-        display_name=client_config["display_name"],
-        discount_label=offer["discount_label"],
-        installments=offer["installments"],
-        ticket_tiers="; ".join(offer.get("ticket_tiers", [])),
-        date_label=offer["date_label"],
-        location_label=offer["location_label"],
-        speakers=", ".join(speakers_sample) if speakers_sample else "nao informado",
-        angle=angle,
-    )
-
-    if not GEMINI_KEY:
-        # fallback so the pipeline still produces something without a key
-        return {
-            "headline_lines": ["Garanta seu ingresso", "com desconto para o", "CBFD 2026"],
-            "highlight_word": "CBFD",
-            "subtext": f"{offer['discount_label']} - {offer['installments']}",
-        }
-
-    body = {"contents": [{"parts": [{"text": prompt}]}]}
-
-    max_attempts = 4
-    for attempt in range(max_attempts):
-        r = requests.post(
-            f"{GEMINI_URL}?key={GEMINI_KEY}",
-            json=body,
-            timeout=30,
-        )
-        if r.status_code == 429:
-            wait = 20 * (attempt + 1)
-            print(f"Gemini 429 (rate limit), aguardando {wait}s antes de tentar de novo "
-                  f"(tentativa {attempt + 1}/{max_attempts})...")
-            time.sleep(wait)
-            continue
-        r.raise_for_status()
-        break
-    else:
-        raise RuntimeError("Gemini continuou retornando 429 apos varias tentativas")
-
-    text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-    text = text.strip().strip("`").replace("json\n", "", 1)
-    return json.loads(text)
-
-
-if __name__ == "__main__":
-    with open("config/clients.json") as f:
-        clients = json.load(f)["clients"]
-    result = generate_weekly_copy(clients[0])
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+{
+  "clients": [
+    {
+      "id": "cbfd",
+      "active": true,
+      "display_name": "Congresso Brasileiro de Fisioterapia da Dor",
+      "logo_file": "assets/logos/cbfd.png",
+      "colors": {
+        "bg_start": [17, 8, 51],
+        "bg_end": [58, 30, 92],
+        "wave": [80, 40, 110],
+        "accent": [240, 130, 40],
+        "text_muted": [240, 235, 250]
+      },
+      "offer": {
+        "discount_label": "49% OFF",
+        "installments": "ate 10x sem juros",
+        "date_label": "22 a 24 de outubro de 2026",
+        "location_label": "Florianopolis - SC",
+        "cta_label": "GARANTIR MEU INGRESSO",
+        "site_url": "https://congressodedor.com.br/",
+        "ticket_tiers": [
+          "Graduacao: de R$1.200 por 10x R$61,20",
+          "Pos-graduacao: de R$1.350 por 10x R$68,85",
+          "Profissional: de R$1.450 por 10x R$73,95"
+        ]
+      },
+      "speakers": [
+        "Wiron Correia Lima", "Wagner Haun", "Thalissa Maniaes", "Rodrigo Medina",
+        "Oseas Moura", "Marcos Boscatto", "Marco Pintucci", "Leilane Marcos",
+        "Alecio Brasileiro", "Angelica Trevisan", "Daiane Paza", "Danieli Spagnol",
+        "Dyely Campos", "Fabio Arcanjo", "Ismael Gomes", "Adriano Rodycz",
+        "Juliano Tibola", "Jose Ordenes", "Amanda Braz", "Micheline Koerich"
+      ],
+      "photo_search": {
+        "queries": ["physiotherapy session", "physical therapy patient", "fisioterapia consultorio"],
+        "orientation": "squarish"
+      },
+      "copy_angles": [
+        "urgencia: a virada de lote esta chegando e o preco sobe de R$61-73 (dependendo da categoria) para o valor cheio de ate R$1.450; reforce que quem comprar antes trava o desconto de 49%",
+        "dor do profissional: hoje a pratica clinica de muitos fisioterapeutas ainda e conduzida por protocolos ultrapassados e decisoes pouco embasadas, o que gera pacientes cronicos e frustrados voltando sempre e profissionais desvalorizados e mal remunerados; mostre o CBFD como a saida desse ciclo",
+        "autoridade com nomes reais: cite 2 a 3 nomes da lista de palestrantes fornecida (rotacione a cada geracao) como parte do time cientifico do congresso, reforcando que sao profissionais que atuam na linha de frente do tratamento da dor",
+        "oferta e parcelamento: detalhe as 3 categorias de ingresso (graduacao, pos-graduacao, profissional) com seus precos parcelados, deixando claro que ha uma opcao pra cada momento de carreira",
+        "segmentacao por publico: fale diretamente com um dos 3 perfis do evento (quem esta na graduacao e quer clareza de carreira, fisioterapeuta clinico que lida com dor todo dia, ou dono de clinica que quer melhorar resultado clinico e financeiro) -- escolha um por vez"
+      ]
+    }
+  ]
+}
