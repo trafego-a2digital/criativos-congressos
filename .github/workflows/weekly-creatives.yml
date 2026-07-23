@@ -32,7 +32,7 @@ jobs:
         run: python scripts/build_gallery.py
 
       - name: Atualizar galeria (docs/index.html)
-        run: python build_gallery.py
+        run: python scripts/build_gallery.py
 
       - name: Commit dos criativos gerados
         run: |
