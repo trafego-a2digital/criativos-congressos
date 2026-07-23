@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from datetime import date
 
 from fetch_photo import fetch_background_photo
@@ -18,6 +19,12 @@ def run():
             continue
 
         client_id = client["id"]
+        out_dir = f"docs/criativos/{client_id}"
+
+        # limpa a semana anterior antes de gerar a nova -- so mantem a rodada atual
+        if os.path.isdir(out_dir):
+            shutil.rmtree(out_dir)
+        os.makedirs(out_dir, exist_ok=True)
 
         print(f"[{client_id}] fetching background photo...")
         photo_path = fetch_background_photo(
@@ -25,9 +32,6 @@ def run():
             orientation=client["photo_search"].get("orientation", "squarish"),
             cache_path=f"/tmp/{client_id}_bg.jpg",
         )
-
-        out_dir = f"docs/criativos/{client_id}"
-        os.makedirs(out_dir, exist_ok=True)
 
         for i, angle in enumerate(client["copy_angles"], start=1):
             print(f"[{client_id}] generating copy for angle {i}/{len(client['copy_angles'])}: {angle}")
