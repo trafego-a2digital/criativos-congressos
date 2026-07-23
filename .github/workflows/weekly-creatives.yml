@@ -32,7 +32,6 @@ jobs:
         run: python scripts/build_gallery.py
 
       - name: Atualizar galeria (docs/index.html)
-        working-directory: scripts
         run: python build_gallery.py
 
       - name: Commit dos criativos gerados
