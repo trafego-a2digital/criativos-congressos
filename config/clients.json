@@ -1,0 +1,36 @@
+{
+  "clients": [
+    {
+      "id": "cbfd",
+      "active": true,
+      "display_name": "Congresso Brasileiro de Fisioterapia da Dor",
+      "logo_file": "assets/logos/cbfd.png",
+      "colors": {
+        "bg_start": [17, 8, 51],
+        "bg_end": [58, 30, 92],
+        "wave": [80, 40, 110],
+        "accent": [240, 130, 40],
+        "text_muted": [240, 235, 250]
+      },
+      "offer": {
+        "discount_label": "49% OFF",
+        "installments": "ate 10x sem juros",
+        "date_label": "22 a 24 de outubro de 2026",
+        "location_label": "Florianopolis - SC",
+        "cta_label": "GARANTIR MEU INGRESSO",
+        "site_url": "https://congressodedor.com.br/"
+      },
+      "photo_search": {
+        "queries": ["physiotherapy session", "physical therapy patient", "fisioterapia consultorio"],
+        "orientation": "squarish"
+      },
+      "copy_angles": [
+        "urgencia (virada de lote, preco vai subir)",
+        "dor/problema (protocolos ultrapassados)",
+        "autoridade (especialistas, line-up)",
+        "parcelamento (10x sem juros)",
+        "transformacao/desejo (sair na frente na carreira)"
+      ]
+    }
+  ]
+}
