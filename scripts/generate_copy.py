@@ -7,6 +7,7 @@ Env var expected: GEMINI_API_KEY
 import os
 import json
 import random
+import time
 import requests
 
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
@@ -60,12 +61,25 @@ def generate_weekly_copy(client_config, angle=None):
         }
 
     body = {"contents": [{"parts": [{"text": prompt}]}]}
-    r = requests.post(
-        f"{GEMINI_URL}?key={GEMINI_KEY}",
-        json=body,
-        timeout=30,
-    )
-    r.raise_for_status()
+
+    max_attempts = 4
+    for attempt in range(max_attempts):
+        r = requests.post(
+            f"{GEMINI_URL}?key={GEMINI_KEY}",
+            json=body,
+            timeout=30,
+        )
+        if r.status_code == 429:
+            wait = 20 * (attempt + 1)
+            print(f"Gemini 429 (rate limit), aguardando {wait}s antes de tentar de novo "
+                  f"(tentativa {attempt + 1}/{max_attempts})...")
+            time.sleep(wait)
+            continue
+        r.raise_for_status()
+        break
+    else:
+        raise RuntimeError("Gemini continuou retornando 429 apos varias tentativas")
+
     text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
     text = text.strip().strip("`").replace("json\n", "", 1)
     return json.loads(text)
