@@ -21,14 +21,18 @@ ingressos para congressos e eventos profissionais no Brasil.
 
 Evento: {display_name}
 Oferta atual: {discount_label}, {installments}
+Categorias de ingresso: {ticket_tiers}
 Data: {date_label}
 Local: {location_label}
+Palestrantes confirmados (use nomes reais quando o angulo pedir): {speakers}
 
 Angulo desta semana: {angle}
 
 Gere um JSON com exatamente estas chaves, em portugues do Brasil, sem
 acentuacao problematica, linguagem direta e sem cliche de IA (nada de
-"desbloqueie", "imperdivel", "transformador"):
+"desbloqueie", "imperdivel", "transformador"). Se o angulo mencionar citar
+palestrantes, escolha 2 a 3 nomes da lista fornecida e cite pelo nome real
+(nao invente nomes que nao estao na lista):
 
 {{
   "headline_lines": ["linha 1", "linha 2", "linha 3 (max 3 linhas curtas)"],
@@ -42,13 +46,17 @@ Responda apenas com o JSON, sem markdown, sem comentario."""
 def generate_weekly_copy(client_config, angle=None):
     offer = client_config["offer"]
     angle = angle or random.choice(client_config["copy_angles"])
+    speakers = client_config.get("speakers", [])
+    speakers_sample = random.sample(speakers, min(6, len(speakers))) if speakers else []
 
     prompt = PROMPT_TEMPLATE.format(
         display_name=client_config["display_name"],
         discount_label=offer["discount_label"],
         installments=offer["installments"],
+        ticket_tiers="; ".join(offer.get("ticket_tiers", [])),
         date_label=offer["date_label"],
         location_label=offer["location_label"],
+        speakers=", ".join(speakers_sample) if speakers_sample else "nao informado",
         angle=angle,
     )
 
