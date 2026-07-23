@@ -22,12 +22,14 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Gerar criativos
-        working-directory: scripts
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-        run: python main.py
+        run: python scripts/main.py
+
+      - name: Atualizar galeria (docs/index.html)
+        run: python scripts/build_gallery.py
 
       - name: Atualizar galeria (docs/index.html)
         working-directory: scripts
