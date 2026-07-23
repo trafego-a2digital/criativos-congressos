@@ -18,8 +18,6 @@ def run():
             continue
 
         client_id = client["id"]
-        print(f"[{client_id}] generating copy...")
-        copy = generate_weekly_copy(client)
 
         print(f"[{client_id}] fetching background photo...")
         photo_path = fetch_background_photo(
@@ -28,19 +26,24 @@ def run():
             cache_path=f"/tmp/{client_id}_bg.jpg",
         )
 
-        print(f"[{client_id}] rendering creative...")
-        img = render(
-            client_config=client,
-            copy=copy,
-            photo_path=photo_path,
-            logo_path=client["logo_file"],
-        )
-
         out_dir = f"docs/criativos/{client_id}"
         os.makedirs(out_dir, exist_ok=True)
-        out_path = f"{out_dir}/{today}.png"
-        img.save(out_path, quality=95)
-        print(f"[{client_id}] saved {out_path}")
+
+        for i, angle in enumerate(client["copy_angles"], start=1):
+            print(f"[{client_id}] generating copy for angle {i}/{len(client['copy_angles'])}: {angle}")
+            copy = generate_weekly_copy(client, angle=angle)
+
+            print(f"[{client_id}] rendering creative {i}...")
+            img = render(
+                client_config=client,
+                copy=copy,
+                photo_path=photo_path,
+                logo_path=client["logo_file"],
+            )
+
+            out_path = f"{out_dir}/{today}_{i}.png"
+            img.save(out_path, quality=95)
+            print(f"[{client_id}] saved {out_path}")
 
 
 if __name__ == "__main__":
