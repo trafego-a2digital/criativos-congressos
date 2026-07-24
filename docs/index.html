@@ -3,24 +3,52 @@
 <head>
 <meta charset="utf-8">
 <title>Criativos semanais</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 body { font-family: sans-serif; background: #111; color: #eee; padding: 40px; }
 h1 { font-size: 22px; }
-h2 { font-size: 18px; margin-top: 40px; color: #f0a028; }
+h2 { font-size: 18px; margin-top: 40px; color: #f0a028; display: flex; align-items: center; gap: 16px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 .grid img { width: 100%; border-radius: 8px; display: block; }
 .grid a { text-decoration: none; color: #ccc; font-size: 13px; }
+.download-btn {
+  background: #f0a028; color: #1a1a1a; border: none; border-radius: 6px;
+  padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;
+}
+.download-btn:hover { background: #ffb84d; }
+.download-btn:disabled { opacity: 0.6; cursor: default; }
 </style>
 </head>
 <body>
 <h1>Criativos gerados</h1>
 
-<h2>Congresso Brasileiro de Fisioterapia da Dor</h2><div class='grid'>
-<a href='criativos/cbfd/2026-07-23_5.png' target='_blank'><img src='criativos/cbfd/2026-07-23_5.png'><br>2026-07-23_5.png</a>
-<a href='criativos/cbfd/2026-07-23_4.png' target='_blank'><img src='criativos/cbfd/2026-07-23_4.png'><br>2026-07-23_4.png</a>
-<a href='criativos/cbfd/2026-07-23_3.png' target='_blank'><img src='criativos/cbfd/2026-07-23_3.png'><br>2026-07-23_3.png</a>
-<a href='criativos/cbfd/2026-07-23_2.png' target='_blank'><img src='criativos/cbfd/2026-07-23_2.png'><br>2026-07-23_2.png</a>
-<a href='criativos/cbfd/2026-07-23_1.png' target='_blank'><img src='criativos/cbfd/2026-07-23_1.png'><br>2026-07-23_1.png</a>
-<a href='criativos/cbfd/2026-07-23.png' target='_blank'><img src='criativos/cbfd/2026-07-23.png'><br>2026-07-23.png</a>
+<h2>Congresso Brasileiro de Fisioterapia da Dor <button class='download-btn' onclick='baixarTodos("cbfd", ["2026-07-24_1.png", "2026-07-24_2.png", "2026-07-24_3.png", "2026-07-24_4.png", "2026-07-24_5.png"], this)'>Baixar todos (5)</button></h2><div class='grid'>
+<a href='criativos/cbfd/2026-07-24_1.png' target='_blank'><img src='criativos/cbfd/2026-07-24_1.png'><br>2026-07-24_1.png</a>
+<a href='criativos/cbfd/2026-07-24_2.png' target='_blank'><img src='criativos/cbfd/2026-07-24_2.png'><br>2026-07-24_2.png</a>
+<a href='criativos/cbfd/2026-07-24_3.png' target='_blank'><img src='criativos/cbfd/2026-07-24_3.png'><br>2026-07-24_3.png</a>
+<a href='criativos/cbfd/2026-07-24_4.png' target='_blank'><img src='criativos/cbfd/2026-07-24_4.png'><br>2026-07-24_4.png</a>
+<a href='criativos/cbfd/2026-07-24_5.png' target='_blank'><img src='criativos/cbfd/2026-07-24_5.png'><br>2026-07-24_5.png</a>
 </div>
+<script>
+async function baixarTodos(clientId, files, btn) {
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Baixando...';
+  const zip = new JSZip();
+  for (const f of files) {
+    const resp = await fetch(`criativos/${clientId}/${f}`);
+    const blob = await resp.blob();
+    zip.file(f, blob);
+  }
+  const content = await zip.generateAsync({type: 'blob'});
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${clientId}_criativos.zip`;
+  a.click();
+  URL.revokeObjectURL(url);
+  btn.disabled = false;
+  btn.textContent = original;
+}
+</script>
 </body></html>
