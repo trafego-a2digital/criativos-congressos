@@ -34,19 +34,22 @@ def run():
         )
 
         themes = client.get("themes") or [client["colors"]]
+        layouts = ["classico", "foto_destaque", "selo_central"]
 
         for i, angle in enumerate(client["copy_angles"], start=1):
             print(f"[{client_id}] generating copy for angle {i}/{len(client['copy_angles'])}: {angle}")
             copy = generate_weekly_copy(client, angle=angle)
 
             theme = themes[(i - 1) % len(themes)]
-            print(f"[{client_id}] rendering creative {i} with theme '{theme.get('name', i)}'...")
+            layout = layouts[(i - 1) % len(layouts)]
+            print(f"[{client_id}] rendering creative {i} -- theme '{theme.get('name', i)}', layout '{layout}'...")
             img = render(
                 client_config=client,
                 copy=copy,
                 photo_path=photo_path,
                 logo_path=client["logo_file"],
                 colors_override=theme,
+                layout=layout,
             )
 
             out_path = f"{out_dir}/{today}_{i}.png"
