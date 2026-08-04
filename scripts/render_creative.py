@@ -15,12 +15,41 @@ FONT_B = "assets/fonts/DejaVuSans-Bold.ttf"
 FONT_R = "assets/fonts/DejaVuSans.ttf"
 
 
+def wrap_text(draw, text, font, max_width):
+    words = text.split()
+    lines, cur = [], ""
+    for w in words:
+        test = (cur + " " + w).strip()
+        if draw.textlength(test, font=font) <= max_width:
+            cur = test
+        else:
+            if cur:
+                lines.append(cur)
+            cur = w
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def fit_headline(draw, text, max_width, max_lines=3, start_size=56, min_size=34, step=4):
+    size = start_size
+    while size >= min_size:
+        font = F(FONT_B, size)
+        lines = wrap_text(draw, text, font, max_width)
+        if len(lines) <= max_lines:
+            return font, lines, size
+        size -= step
+    # give up shrinking further, just wrap at the minimum size (may run to more lines)
+    font = F(FONT_B, min_size)
+    return font, wrap_text(draw, text, font, max_width), min_size
+
+
 def F(path, size):
     return ImageFont.truetype(path, size)
 
 
-def render(client_config, copy, photo_path, logo_path, logo_needs_bg_removal=True):
-    colors = client_config["colors"]
+def render(client_config, copy, photo_path, logo_path, logo_needs_bg_removal=True, colors_override=None):
+    colors = colors_override or client_config["colors"]
     offer = client_config["offer"]
     bg_start = tuple(colors["bg_start"])
     bg_end = tuple(colors["bg_end"])
@@ -76,23 +105,37 @@ def render(client_config, copy, photo_path, logo_path, logo_needs_bg_removal=Tru
     logo.thumbnail((430, 430), Image.LANCZOS)
     img.paste(logo, (50, 55), logo)
 
-    # 5) headline (2-3 lines, last word of the last line highlighted)
+    # 5) headline -- wrapped to fit the canvas width, auto-shrinks if the
+    # AI-generated text runs long, highlight_word colored wherever it lands
     hx, hy = 60, 500
-    line_h = 68
-    lines = copy["headline_lines"]
+    max_text_width = W - hx - 60  # keep a right margin so nothing touches the edge
+    headline_text = " ".join(copy["headline_lines"])
+    headline_font, lines, size = fit_headline(d, headline_text, max_text_width)
+    line_h = int(size * 1.25)
+
+    highlight = copy.get("highlight_word", "")
+    highlighted_done = False
     for i, line in enumerate(lines):
         y = hy + i * line_h
-        if i == len(lines) - 1 and copy.get("highlight_word") and copy["highlight_word"] in line:
-            hw = copy["highlight_word"]
-            before = line.split(hw)[0]
-            d.text((hx, y), before, font=F(FONT_B, 56), fill=white)
-            tw = d.textlength(before, font=F(FONT_B, 56))
-            d.text((hx + tw, y), hw, font=F(FONT_B, 56), fill=accent)
+        if highlight and not highlighted_done and highlight in line:
+            before, _, after = line.partition(highlight)
+            x = hx
+            if before:
+                d.text((x, y), before, font=headline_font, fill=white)
+                x += d.textlength(before, font=headline_font)
+            d.text((x, y), highlight, font=headline_font, fill=accent)
+            x += d.textlength(highlight, font=headline_font)
+            if after:
+                d.text((x, y), after, font=headline_font, fill=white)
+            highlighted_done = True
         else:
-            d.text((hx, y), line, font=F(FONT_B, 56), fill=white)
+            d.text((hx, y), line, font=headline_font, fill=white)
 
-    d.text((hx, hy + len(lines) * line_h + 15), copy["subtext"],
-            font=F(FONT_R, 28), fill=text_muted)
+    headline_bottom = hy + len(lines) * line_h + 15
+    subtext_font = F(FONT_R, 26)
+    subtext_lines = wrap_text(d, copy["subtext"], subtext_font, max_text_width)[:2]
+    for i, line in enumerate(subtext_lines):
+        d.text((hx, headline_bottom + i * 34), line, font=subtext_font, fill=text_muted)
 
     # 6) info pills
     def icon_pill(x, y, w, label, value, icon="calendar"):
