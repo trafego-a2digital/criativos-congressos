@@ -87,9 +87,9 @@ def generate_weekly_copy(client_config, angle=None):
             time.sleep(wait)
             continue
 
-        if r.status_code == 429:
+        if r.status_code in (429, 503):
             wait = 20 * (attempt + 1)
-            print(f"Gemini 429 (rate limit), aguardando {wait}s antes de tentar de novo "
+            print(f"Gemini {r.status_code} (indisponivel), aguardando {wait}s antes de tentar de novo "
                   f"(tentativa {attempt + 1}/{max_attempts})...")
             time.sleep(wait)
             continue
