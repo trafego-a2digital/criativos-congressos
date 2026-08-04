@@ -28,11 +28,12 @@ Palestrantes confirmados (use nomes reais quando o angulo pedir): {speakers}
 
 Angulo desta semana: {angle}
 
-Gere um JSON com exatamente estas chaves, em portugues do Brasil, sem
-acentuacao problematica, linguagem direta e sem cliche de IA (nada de
-"desbloqueie", "imperdivel", "transformador"). Se o angulo mencionar citar
-palestrantes, escolha 2 a 3 nomes da lista fornecida e cite pelo nome real
-(nao invente nomes que nao estao na lista):
+Gere um JSON com exatamente estas chaves, em portugues do Brasil corretamente
+acentuado (use os acentos normalmente: nao, voce, atencao devem virar não,
+você, atenção), linguagem direta e sem cliche de IA (nada de "desbloqueie",
+"imperdivel", "transformador"). Se o angulo mencionar citar palestrantes,
+escolha 2 a 3 nomes da lista fornecida e cite pelo nome real (nao invente
+nomes que nao estao na lista):
 
 {{
   "headline_lines": ["linha 1", "linha 2", "linha 3 (max 3 linhas curtas)"],
