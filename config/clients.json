@@ -5,13 +5,48 @@
       "active": true,
       "display_name": "Congresso Brasileiro de Fisioterapia da Dor",
       "logo_file": "assets/logos/cbfd.png",
-      "colors": {
-        "bg_start": [17, 8, 51],
-        "bg_end": [58, 30, 92],
-        "wave": [80, 40, 110],
-        "accent": [240, 130, 40],
-        "text_muted": [240, 235, 250]
-      },
+      "themes": [
+        {
+          "name": "roxo-laranja",
+          "bg_start": [17, 8, 51],
+          "bg_end": [58, 30, 92],
+          "wave": [80, 40, 110],
+          "accent": [240, 130, 40],
+          "text_muted": [240, 235, 250]
+        },
+        {
+          "name": "verde-ambar",
+          "bg_start": [6, 38, 36],
+          "bg_end": [10, 74, 66],
+          "wave": [12, 95, 80],
+          "accent": [235, 170, 45],
+          "text_muted": [230, 245, 240]
+        },
+        {
+          "name": "grafite-ciano",
+          "bg_start": [12, 14, 28],
+          "bg_end": [30, 34, 68],
+          "wave": [40, 46, 100],
+          "accent": [70, 200, 220],
+          "text_muted": [225, 230, 245]
+        },
+        {
+          "name": "bordo-dourado",
+          "bg_start": [30, 8, 14],
+          "bg_end": [70, 20, 32],
+          "wave": [95, 28, 42],
+          "accent": [225, 180, 80],
+          "text_muted": [245, 230, 225]
+        },
+        {
+          "name": "ameixa-lima",
+          "bg_start": [26, 8, 32],
+          "bg_end": [64, 20, 70],
+          "wave": [85, 26, 90],
+          "accent": [175, 220, 60],
+          "text_muted": [240, 230, 245]
+        }
+      ],
       "offer": {
         "discount_label": "49% OFF",
         "installments": "ate 10x sem juros",
