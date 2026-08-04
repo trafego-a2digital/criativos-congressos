@@ -7,6 +7,7 @@ Env var expected: GEMINI_API_KEY
 import os
 import json
 import random
+import re
 import time
 import requests
 
@@ -17,7 +18,15 @@ GEMINI_URL = (
 )
 
 PROMPT_TEMPLATE = """Voce e um copywriter de anuncios (Meta Ads) especializado em vender
-ingressos para congressos e eventos profissionais no Brasil.
+ingressos para congressos cientificos presenciais no Brasil.
+
+IMPORTANTE sobre o tom: este e um CONGRESSO PRESENCIAL de 3 dias, com
+palestrantes, palestras, workshops e networking -- NAO e um curso online
+nem infoproduto. Evite completamente vocabulario de curso/infoproduto como
+"aprofunde-se", "domine em X passos", "seu proximo nivel", "seu proximo
+passo como [profissao]", "modulo", "aula". Use vocabulario de evento
+presencial: congresso, ingresso, palestras, workshops, dias de imersao,
+networking, palco, auditorio, participantes.
 
 Evento: {display_name}
 Oferta atual: {discount_label}, {installments}
@@ -31,9 +40,10 @@ Angulo desta semana: {angle}
 Gere um JSON com exatamente estas chaves, em portugues do Brasil corretamente
 acentuado (use os acentos normalmente: nao, voce, atencao devem virar não,
 você, atenção), linguagem direta e sem cliche de IA (nada de "desbloqueie",
-"imperdivel", "transformador"). Se o angulo mencionar citar palestrantes,
-escolha 2 a 3 nomes da lista fornecida e cite pelo nome real (nao invente
-nomes que nao estao na lista):
+"imperdivel", "transformador"). Texto puro, SEM markdown, SEM asteriscos,
+SEM negrito, SEM hashtags -- nenhum simbolo de formatacao, so texto corrido.
+Se o angulo mencionar citar palestrantes, escolha 2 a 3 nomes da lista
+fornecida e cite pelo nome real (nao invente nomes que nao estao na lista):
 
 {{
   "headline_lines": ["linha 1", "linha 2", "linha 3 (max 3 linhas curtas)"],
@@ -42,6 +52,22 @@ nomes que nao estao na lista):
 }}
 
 Responda apenas com o JSON, sem markdown, sem comentario."""
+
+
+def _strip_markdown(text):
+    if not isinstance(text, str):
+        return text
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)  # **bold**
+    text = re.sub(r"\*(.*?)\*", r"\1", text)      # *italic*
+    text = re.sub(r"[#_`]", "", text)             # stray markdown symbols
+    return text.strip()
+
+
+def _clean_copy(copy):
+    copy["headline_lines"] = [_strip_markdown(line) for line in copy.get("headline_lines", [])]
+    copy["highlight_word"] = _strip_markdown(copy.get("highlight_word", ""))
+    copy["subtext"] = _strip_markdown(copy.get("subtext", ""))
+    return copy
 
 
 def generate_weekly_copy(client_config, angle=None):
@@ -100,7 +126,7 @@ def generate_weekly_copy(client_config, angle=None):
 
     text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
     text = text.strip().strip("`").replace("json\n", "", 1)
-    return json.loads(text)
+    return _clean_copy(json.loads(text))
 
 
 if __name__ == "__main__":
