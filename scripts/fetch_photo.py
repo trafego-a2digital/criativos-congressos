@@ -15,8 +15,13 @@ import requests
 PEXELS_KEY = os.environ.get("PEXELS_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_ACCESS_KEY")
 
+# how many of the top (most relevant) results to consider -- picking from a
+# small top slice instead of the full page keeps loosely-related results
+# (curtains, generic interiors, etc.) out of the pool
+TOP_N = 3
 
-def _fetch_pexels(query, orientation="squarish", per_page=10):
+
+def _fetch_pexels(query, orientation="squarish", per_page=8):
     url = "https://api.pexels.com/v1/search"
     headers = {"Authorization": PEXELS_KEY}
     params = {"query": query, "orientation": orientation, "per_page": per_page}
@@ -25,11 +30,11 @@ def _fetch_pexels(query, orientation="squarish", per_page=10):
     photos = r.json().get("photos", [])
     if not photos:
         return None
-    photo = random.choice(photos)
+    photo = random.choice(photos[:TOP_N])
     return photo["src"]["large"]
 
 
-def _fetch_unsplash(query, orientation="squarish", per_page=10):
+def _fetch_unsplash(query, orientation="squarish", per_page=8):
     url = "https://api.unsplash.com/search/photos"
     headers = {"Authorization": f"Client-ID {UNSPLASH_KEY}"}
     params = {"query": query, "orientation": orientation, "per_page": per_page}
@@ -38,7 +43,7 @@ def _fetch_unsplash(query, orientation="squarish", per_page=10):
     results = r.json().get("results", [])
     if not results:
         return None
-    photo = random.choice(results)
+    photo = random.choice(results[:TOP_N])
     return photo["urls"]["regular"]
 
 
@@ -47,13 +52,16 @@ def fetch_background_photo(queries, orientation="squarish", cache_path=None):
     queries: list of search terms, tried in order until one returns a result.
     Returns local file path to the downloaded image.
     """
-    query = random.choice(queries)
     img_url = None
 
-    if PEXELS_KEY:
-        img_url = _fetch_pexels(query, orientation)
-    if img_url is None and UNSPLASH_KEY:
-        img_url = _fetch_unsplash(query, orientation)
+    # try each query in order (not random) until one actually returns a photo
+    for query in queries:
+        if PEXELS_KEY:
+            img_url = _fetch_pexels(query, orientation)
+        if img_url is None and UNSPLASH_KEY:
+            img_url = _fetch_unsplash(query, orientation)
+        if img_url:
+            break
 
     if img_url is None:
         raise RuntimeError(
