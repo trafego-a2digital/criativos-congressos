@@ -33,16 +33,20 @@ def run():
             cache_path=f"/tmp/{client_id}_bg.jpg",
         )
 
+        themes = client.get("themes") or [client["colors"]]
+
         for i, angle in enumerate(client["copy_angles"], start=1):
             print(f"[{client_id}] generating copy for angle {i}/{len(client['copy_angles'])}: {angle}")
             copy = generate_weekly_copy(client, angle=angle)
 
-            print(f"[{client_id}] rendering creative {i}...")
+            theme = themes[(i - 1) % len(themes)]
+            print(f"[{client_id}] rendering creative {i} with theme '{theme.get('name', i)}'...")
             img = render(
                 client_config=client,
                 copy=copy,
                 photo_path=photo_path,
                 logo_path=client["logo_file"],
+                colors_override=theme,
             )
 
             out_path = f"{out_dir}/{today}_{i}.png"
