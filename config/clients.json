@@ -68,7 +68,11 @@
         "Juliano Tibola", "Jose Ordenes", "Amanda Braz", "Micheline Koerich"
       ],
       "photo_search": {
-        "queries": ["physiotherapy session", "physical therapy patient", "fisioterapia consultorio"],
+        "queries": [
+          "physical therapist treating patient shoulder",
+          "physiotherapist massaging patient back",
+          "physical therapy clinic session"
+        ],
         "orientation": "squarish"
       },
       "copy_angles": [
