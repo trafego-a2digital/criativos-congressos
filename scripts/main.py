@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import time
 from datetime import date
 
 from fetch_photo import fetch_background_photo
@@ -35,9 +36,17 @@ def run():
 
         themes = client.get("themes") or [client["colors"]]
         layouts = ["classico", "foto_destaque", "selo_central"]
+        angles = client["copy_angles"]
 
-        for i, angle in enumerate(client["copy_angles"], start=1):
-            print(f"[{client_id}] generating copy for angle {i}/{len(client['copy_angles'])}: {angle}")
+        for i, angle in enumerate(angles, start=1):
+            if i > 1:
+                # espaca as chamadas pra nao estourar o limite por minuto da
+                # chave do Gemini (ainda mais se ela for compartilhada com
+                # outras automacoes rodando perto do mesmo horario)
+                print(f"[{client_id}] aguardando 12s antes da proxima chamada ao Gemini...")
+                time.sleep(12)
+
+            print(f"[{client_id}] generating copy for angle {i}/{len(angles)}: {angle}")
             copy = generate_weekly_copy(client, angle=angle)
 
             theme = themes[(i - 1) % len(themes)]
