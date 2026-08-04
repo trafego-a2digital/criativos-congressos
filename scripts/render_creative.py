@@ -195,6 +195,16 @@ def render_foto_destaque(client_config, copy, photo_path, logo_path, colors, log
 
     src = Image.open(photo_path).convert("RGB")
     photo = ImageOps.fit(src, (W, H), method=Image.LANCZOS, centering=(0.5, 0.42))
+
+    # editorial/documentary grade -- flattens the glossy "stock lifestyle
+    # photo" look that reads as infoproduct/online-course rather than a
+    # scientific congress: less saturation, a bit more contrast, and a thin
+    # brand-color tint over the whole frame
+    photo = ImageEnhance.Color(photo).enhance(0.62)
+    photo = ImageEnhance.Contrast(photo).enhance(1.12)
+    tint = Image.new("RGB", (W, H), tuple(colors["bg_start"]))
+    photo = Image.blend(photo, tint, alpha=0.16)
+
     img = photo.convert("RGBA")
 
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
