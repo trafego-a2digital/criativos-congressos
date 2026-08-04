@@ -100,7 +100,7 @@ def generate_weekly_copy(client_config, angle=None):
 
     body = {"contents": [{"parts": [{"text": prompt}]}]}
 
-    max_attempts = 4
+    max_attempts = 5
     r = None
     for attempt in range(max_attempts):
         try:
@@ -110,14 +110,14 @@ def generate_weekly_copy(client_config, angle=None):
                 timeout=60,
             )
         except requests.exceptions.Timeout:
-            wait = 15 * (attempt + 1)
+            wait = 15 * (2 ** attempt)
             print(f"Gemini timeout, aguardando {wait}s antes de tentar de novo "
                   f"(tentativa {attempt + 1}/{max_attempts})...")
             time.sleep(wait)
             continue
 
         if r.status_code in (429, 503):
-            wait = 20 * (attempt + 1)
+            wait = 15 * (2 ** attempt)
             print(f"Gemini {r.status_code} (indisponivel), aguardando {wait}s antes de tentar de novo "
                   f"(tentativa {attempt + 1}/{max_attempts})...")
             time.sleep(wait)
