@@ -72,12 +72,21 @@ def generate_weekly_copy(client_config, angle=None):
     body = {"contents": [{"parts": [{"text": prompt}]}]}
 
     max_attempts = 4
+    r = None
     for attempt in range(max_attempts):
-        r = requests.post(
-            f"{GEMINI_URL}?key={GEMINI_KEY}",
-            json=body,
-            timeout=30,
-        )
+        try:
+            r = requests.post(
+                f"{GEMINI_URL}?key={GEMINI_KEY}",
+                json=body,
+                timeout=60,
+            )
+        except requests.exceptions.Timeout:
+            wait = 15 * (attempt + 1)
+            print(f"Gemini timeout, aguardando {wait}s antes de tentar de novo "
+                  f"(tentativa {attempt + 1}/{max_attempts})...")
+            time.sleep(wait)
+            continue
+
         if r.status_code == 429:
             wait = 20 * (attempt + 1)
             print(f"Gemini 429 (rate limit), aguardando {wait}s antes de tentar de novo "
@@ -87,7 +96,7 @@ def generate_weekly_copy(client_config, angle=None):
         r.raise_for_status()
         break
     else:
-        raise RuntimeError("Gemini continuou retornando 429 apos varias tentativas")
+        raise RuntimeError("Gemini continuou falhando (timeout ou 429) apos varias tentativas")
 
     text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
     text = text.strip().strip("`").replace("json\n", "", 1)
