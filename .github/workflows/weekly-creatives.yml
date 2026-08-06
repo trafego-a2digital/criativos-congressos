@@ -2,9 +2,16 @@ name: Gerar criativos semanais
 
 on:
   schedule:
-    # toda segunda-feira as 08:00 (horario de Brasilia = UTC-3)
-    - cron: "0 8 * * 5"
+    # toda sexta-feira as 08:00 (horario de Brasilia = UTC-3)
+    - cron: "0 11 * * 5"
   workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gerar-criativos
+  cancel-in-progress: true
 
 jobs:
   gerar:
@@ -27,9 +34,6 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: python scripts/main.py
-
-      - name: Atualizar galeria (docs/index.html)
-        run: python scripts/build_gallery.py
 
       - name: Atualizar galeria (docs/index.html)
         run: python scripts/build_gallery.py
