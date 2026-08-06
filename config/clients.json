@@ -7,44 +7,44 @@
       "logo_file": "assets/logos/cbfd.png",
       "themes": [
         {
-          "name": "roxo-laranja",
-          "bg_start": [17, 8, 51],
-          "bg_end": [58, 30, 92],
-          "wave": [80, 40, 110],
-          "accent": [240, 130, 40],
-          "text_muted": [240, 235, 250]
+          "name": "roxo-terracota",
+          "bg_start": [20, 14, 38],
+          "bg_end": [46, 28, 64],
+          "wave": [58, 36, 78],
+          "accent": [206, 122, 74],
+          "text_muted": [232, 226, 236]
         },
         {
-          "name": "verde-ambar",
-          "bg_start": [6, 38, 36],
-          "bg_end": [10, 74, 66],
-          "wave": [12, 95, 80],
-          "accent": [235, 170, 45],
-          "text_muted": [230, 245, 240]
+          "name": "verde-dourado",
+          "bg_start": [10, 32, 30],
+          "bg_end": [18, 54, 48],
+          "wave": [22, 66, 58],
+          "accent": [190, 150, 74],
+          "text_muted": [222, 236, 230]
         },
         {
-          "name": "grafite-ciano",
-          "bg_start": [12, 14, 28],
-          "bg_end": [30, 34, 68],
-          "wave": [40, 46, 100],
-          "accent": [70, 200, 220],
-          "text_muted": [225, 230, 245]
+          "name": "grafite-azulado",
+          "bg_start": [16, 18, 30],
+          "bg_end": [34, 38, 56],
+          "wave": [42, 46, 70],
+          "accent": [120, 158, 172],
+          "text_muted": [218, 224, 232]
         },
         {
           "name": "bordo-dourado",
-          "bg_start": [30, 8, 14],
-          "bg_end": [70, 20, 32],
-          "wave": [95, 28, 42],
-          "accent": [225, 180, 80],
-          "text_muted": [245, 230, 225]
+          "bg_start": [26, 12, 16],
+          "bg_end": [54, 22, 28],
+          "wave": [66, 26, 32],
+          "accent": [192, 152, 90],
+          "text_muted": [236, 226, 222]
         },
         {
-          "name": "ameixa-lima",
-          "bg_start": [26, 8, 32],
-          "bg_end": [64, 20, 70],
-          "wave": [85, 26, 90],
-          "accent": [175, 220, 60],
-          "text_muted": [240, 230, 245]
+          "name": "ameixa-sálvia",
+          "bg_start": [22, 12, 26],
+          "bg_end": [46, 20, 50],
+          "wave": [56, 24, 60],
+          "accent": [146, 172, 100],
+          "text_muted": [232, 226, 234]
         }
       ],
       "offer": {
