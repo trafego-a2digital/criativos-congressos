@@ -1,15 +1,3 @@
-"""
-Renders a 1080x1080 ad creative for a given client, using:
-  - the client's colors/copy from clients.json
-  - this week's headline/subtext from generate_copy.py
-  - a background photo from fetch_photo.py
-  - the client's logo (background removed via remove_bg.py if needed)
-
-Three layout compositions are available (see LAYOUTS at the bottom):
-  - "classico"       -> logo top-left, faded photo texture, pills, bottom wave + CTA
-  - "foto_destaque"   -> full-bleed photo hero, dark gradient panel with text at bottom
-  - "selo_central"    -> no photo, centered poster/badge style with big discount seal
-"""
 import math
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
 
@@ -118,9 +106,6 @@ def icon_pill(d, x, y, w, label, value, accent, white, bg_ref, icon="calendar"):
     d.text((x + 82, y + 40), value, font=F(FONT_R, 24), fill=white)
 
 
-# ---------------------------------------------------------------------------
-# LAYOUT 1 -- classico: logo top-left, faded photo texture, pills, wave + CTA
-# ---------------------------------------------------------------------------
 def render_classico(client_config, copy, photo_path, logo_path, colors, logo_needs_bg_removal=True):
     offer = client_config["offer"]
     bg_start, bg_end = tuple(colors["bg_start"]), tuple(colors["bg_end"])
@@ -184,9 +169,6 @@ def render_classico(client_config, copy, photo_path, logo_path, colors, logo_nee
     return img.convert("RGB")
 
 
-# ---------------------------------------------------------------------------
-# LAYOUT 2 -- foto_destaque: full-bleed photo hero, dark panel at the bottom
-# ---------------------------------------------------------------------------
 def render_foto_destaque(client_config, copy, photo_path, logo_path, colors, logo_needs_bg_removal=True):
     offer = client_config["offer"]
     accent = tuple(colors["accent"])
@@ -196,13 +178,9 @@ def render_foto_destaque(client_config, copy, photo_path, logo_path, colors, log
     src = Image.open(photo_path).convert("RGB")
     photo = ImageOps.fit(src, (W, H), method=Image.LANCZOS, centering=(0.5, 0.42))
 
-    # editorial/documentary grade -- flattens the glossy "stock lifestyle
-    # photo" look that reads as infoproduct/online-course rather than a
-    # scientific congress: less saturation, a bit more contrast, and a thin
-    # brand-color tint over the whole frame
     photo = ImageEnhance.Color(photo).enhance(0.62)
     photo = ImageEnhance.Contrast(photo).enhance(1.12)
-    tint = Image.new("RGB", (W, H), tuple(colors["bg_start"]))
+    tint = Image.new("RGB", (W, H), bg_start)
     photo = Image.blend(photo, tint, alpha=0.16)
 
     img = photo.convert("RGBA")
@@ -262,16 +240,24 @@ def render_foto_destaque(client_config, copy, photo_path, logo_path, colors, log
     return img.convert("RGB")
 
 
-# ---------------------------------------------------------------------------
-# LAYOUT 3 -- selo_central: no photo, centered poster/badge style
-# ---------------------------------------------------------------------------
 def render_selo_central(client_config, copy, photo_path, logo_path, colors, logo_needs_bg_removal=True):
     offer = client_config["offer"]
     bg_start, bg_end = tuple(colors["bg_start"]), tuple(colors["bg_end"])
     accent = tuple(colors["accent"])
     text_muted = tuple(colors["text_muted"])
 
-    img = build_gradient(bg_start, bg_end).convert("RGBA")
+    base = build_gradient(bg_start, bg_end)
+    photo = Image.open(photo_path).convert("RGB")
+    photo = ImageOps.fit(photo, (W, H), method=Image.LANCZOS, centering=(0.5, 0.35))
+    photo = ImageEnhance.Color(photo).enhance(0.5)
+    photo = ImageEnhance.Contrast(photo).enhance(1.1)
+
+    img = base.convert("RGBA")
+    photo_rgba = photo.convert("RGBA")
+    photo_rgba.putalpha(60)
+    img = Image.alpha_composite(img, photo_rgba)
+    wash = Image.new("RGBA", (W, H), (*bg_start, 150))
+    img = Image.alpha_composite(img, wash)
     d = ImageDraw.Draw(img, "RGBA")
 
     logo = load_logo(logo_path, logo_needs_bg_removal, (300, 300))
@@ -279,8 +265,6 @@ def render_selo_central(client_config, copy, photo_path, logo_path, colors, logo
     logo_top = 40
     img.paste(logo, (lx, logo_top), logo)
 
-    # big centered discount seal, with faint concentric rings radiating from it
-    # (kept tight so they don't creep up into the logo above)
     seal_cy = logo_top + logo.height + 130
     seal_r = 110
     for ring_r in range(seal_r + 30, seal_r + 130, 35):
