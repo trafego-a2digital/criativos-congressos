@@ -4,7 +4,7 @@ import shutil
 import time
 from datetime import date
 
-from fetch_photo import fetch_background_photo
+from fetch_photo import fetch_multiple_backgrounds
 from generate_copy import generate_weekly_copy
 from render_creative import render
 
@@ -27,16 +27,17 @@ def run():
             shutil.rmtree(out_dir)
         os.makedirs(out_dir, exist_ok=True)
 
-        print(f"[{client_id}] fetching background photo...")
-        photo_path = fetch_background_photo(
-            client["photo_search"]["queries"],
-            orientation=client["photo_search"].get("orientation", "squarish"),
-            cache_path=f"/tmp/{client_id}_bg.jpg",
-        )
-
         themes = client.get("themes") or [client["colors"]]
         layouts = ["classico", "foto_destaque", "selo_central"]
         angles = client["copy_angles"]
+
+        print(f"[{client_id}] fetching {len(angles)} distinct background photos...")
+        photo_paths = fetch_multiple_backgrounds(
+            client["photo_search"]["queries"],
+            count=len(angles),
+            orientation=client["photo_search"].get("orientation", "squarish"),
+            cache_prefix=f"/tmp/{client_id}_bg",
+        )
 
         for i, angle in enumerate(angles, start=1):
             if i > 1:
@@ -51,7 +52,9 @@ def run():
 
             theme = themes[(i - 1) % len(themes)]
             layout = layouts[(i - 1) % len(layouts)]
-            print(f"[{client_id}] rendering creative {i} -- theme '{theme.get('name', i)}', layout '{layout}'...")
+            photo_path = photo_paths[i - 1]
+            print(f"[{client_id}] rendering creative {i} -- theme '{theme.get('name', i)}', "
+                  f"layout '{layout}', photo '{os.path.basename(photo_path)}'...")
             img = render(
                 client_config=client,
                 copy=copy,
